@@ -71,7 +71,10 @@ class Nim
 
   end 
 
- 
+  def human_player
+
+  end
+
   def play_game
     select_config
     select_opponent
