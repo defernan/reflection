@@ -9,7 +9,9 @@ class Nim
   @@board_config2 = [4, 3, 7]
 
   def initialize
-    @opponent
+    #defaults player 1 to human can change with setters
+    @player1 = "human_player" 
+    @player2
     @board
     @play = true
     
@@ -28,8 +30,10 @@ class Nim
     #otherwise recall method
     if selection == "1"
       @board = @@board_config1
+      puts ""
     elsif selection == "2"
       @board = @@board_config2
+      puts ""
     else
       puts "Please enter '1' or '2'"
       select_config 
@@ -60,35 +64,34 @@ class Nim
     selection = gets.chomp
     #check if selection was valid
     if ("1".."#{option}") === selection 
-      @opponent = option_hash[selection.to_i]
+      @player2 = option_hash[selection.to_i]
     else
       puts "Please enter '1'-'#{option}'"
       select_opponent 
     end
+    puts ""
   
   end
 
   def smart_computer_player
     #use for converting to binary
     binary_array = get_binary_array     
-    puts binary_array
-    puts ""
     
     #get kernel state 
     kernel_state = get_kernel_state(binary_array)
-    puts "kernel_state is #{kernel_state}"
     
     #get line to return to winning state
     conversion_line = get_line(kernel_state, binary_array)
  
     #xor desired line
     line = xor_line(kernel_state, binary_array[conversion_line])
-    puts "xord line is #{line}" 
 
     #TODO find optimal line and change the array
     number = line.to_i(2)
-    puts "#{number}"
     
+    #display number taken
+    #add 1 to conversion_line to adjust for base of 1. Was at base 0 to compensate for array starting index
+    puts "Smart computer took #{@board[conversion_line] - number} sticks from row #{conversion_line + 1}"
     @board[conversion_line] = number
     puts "" 
   end
@@ -153,9 +156,24 @@ class Nim
     end
     converted 
   end
+  #END HELPER FUNCTIONS FOR SMART
 
   def dumb_computer_player
+    invalid_row = true
 
+    #pick random valid row 
+    while(invalid_row)
+      row = rand(0...@board.size)
+      if @board[row] > 0 then invalid_row = false end
+    end
+    
+    sticks_taken = rand(1..@board[row])
+    
+    #adjust row to start at base 1
+    puts "Dumb computer took #{sticks_taken} sticks from row #{row + 1}"
+    puts ""
+
+    @board[row] = @board[row] - sticks_taken
   end 
 
   def human_player
@@ -163,13 +181,13 @@ class Nim
     
     row = select_row
     sticks = select_sticks row 
-
+    puts ""
     @board[row] = @board[row] - sticks
   end
 
-  #helper functions for human move
+  #HELPER functions for human move
   def select_row
-    puts "Select the row (1-#{@board.size}): "
+    print "Select the row (1-#{@board.size}): "
     row= gets.chomp
     if ( ("1".."#{@board.size}") === row && @board[row.to_i - 1] > 0 )
       #adjust row to be base 0 so array can access
@@ -194,6 +212,7 @@ class Nim
       select_sticks row
     end
   end 
+  #END HELPER FUNCTIONS FOR HUMAN
   
   def display_board
     for i in 0...@board.size
@@ -202,17 +221,63 @@ class Nim
       puts "" 
     end
   end
+
   def play_game
-    select_config
-    select_opponent
+
+    #used for switching turns
+    player1_turn= true
+    
     while( @play == true )
-      human_player
-      smart_computer_player
+      if( player1_turn )
+        self.send(@player1)
+      else 
+        self.send(@player2)
+      end
+      determine_winner player1_turn
+      
+      #change turn
+      player1_turn = !player1_turn
     end
   end
 
+  def determine_winner player1_turn
+    win = true 
+    for i in 0...@board.size
+      if @board[i] !=0 then win = false end
+    end
+    if (win)
+      @play = false
+      if ( player1_turn )
+        winner = @player1
+      else
+        winner = @player2
+      end
+      puts "#{winner} wins the game!\nThanks for playing"
+    end
+  end
+  
+  #HELPER FUNCTIONS FOR UNIT TESTS
+  def set_board_config
 
+  end
+
+  def set_player1_as_dumb
+    @player1 = "dumb_computer_player"
+  end
+
+  def set_player2_as_smart
+    @player2 = "smart_computer_player"
+  end
+  #END HELPER FUNCTIONS FOR UNIT TEST
 end
 
-nim = Nim.new
-nim.play_game
+if "nim.rb" == $0
+  nim = Nim.new
+
+  #select board config
+  nim.select_config
+
+  #select opponent
+  nim.select_opponent
+  nim.play_game
+end
