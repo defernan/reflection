@@ -79,7 +79,7 @@ class Nim
     puts "kernel_state is #{kernel_state}"
     
     #get line to return to winning state
-    conversion_line = get_line
+    conversion_line = get_line(kernel_state, binary_array)
  
     #xor desired line
     line = xor_line(kernel_state, binary_array[conversion_line])
@@ -87,9 +87,10 @@ class Nim
 
     #TODO find optimal line and change the array
     number = line.to_i(2)
-    result = ""
-    puts "" 
     puts "#{number}"
+    
+    @board[conversion_line] = number
+    puts "" 
   end
   
   #HELPER functions for smart_computer player
@@ -119,8 +120,25 @@ class Nim
   end
   
   #get optimal line to change
-  def get_line
-    1
+  def get_line(kernel_state, binary_array)
+    location = 0
+    line = 0 
+    #find location of leftmost one 
+    for i in 0...kernel_state.size
+      if kernel_state[i] == "1"
+        location = i
+        break
+      end
+    end
+   
+    #find line to xor
+    for i in 0...binary_array.size
+      if (binary_array[i][location] == "1")
+        line = i
+        break 
+      end 
+    end
+    line 
   end
  
   #xors desired string 
