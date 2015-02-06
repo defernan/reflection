@@ -7,14 +7,15 @@ class Nim
   #set board configurations as class variables
   @@board_config1 = [1, 3, 5, 7]
   @@board_config2 = [4, 3, 7]
-
+  @@smart_player_wins = 0
+  
   def initialize
     #defaults player 1 to human can change with setters
     @player1 = "human_player" 
     @player2
     @board
     @play = true
-    
+   
     #use for binary bit rep, specifies how many bits to use 
     @binary_bits = 3
   end
@@ -86,7 +87,7 @@ class Nim
     #xor desired line
     line = xor_line(kernel_state, binary_array[conversion_line])
 
-    #TODO find optimal line and change the array
+    #find optimal line and change the array
     number = line.to_i(2)
     
     #display number taken
@@ -141,6 +142,9 @@ class Nim
         break 
       end 
     end
+	puts "LINE: #{line}"
+	puts "kernel: #{kernel_state}"
+	puts "binary_array: #{binary_array}"
     line 
   end
  
@@ -252,13 +256,15 @@ class Nim
       else
         winner = @player2
       end
+	  if winner == "smart_computer_player" then @@smart_player_wins +=1 end
       puts "#{winner} wins the game!\nThanks for playing"
+	  puts
     end
   end
   
   #HELPER FUNCTIONS FOR UNIT TESTS
-  def set_board_config
-
+  def set_board_config board
+		@board = board
   end
 
   def set_player1_as_dumb
@@ -268,10 +274,14 @@ class Nim
   def set_player2_as_smart
     @player2 = "smart_computer_player"
   end
+  
+  def get_smart_wins
+	@@smart_player_wins
+  end
   #END HELPER FUNCTIONS FOR UNIT TEST
 end
 
-if "nim.rb" == $0
+if __FILE__ == $0
   nim = Nim.new
 
   #select board config
